@@ -1,25 +1,54 @@
 FROM python:3.10-slim
 
-# Set the timezone if needed
-ENV TZ=Asia/Kolkata
+ARG TZ=Europe/Moscow
+ENV TZ="$TZ"
 
-# Install necessary packages: ffmpeg, git, etc.
+# System dependencies:
+# - git, ffmpeg, mediainfo, rsync (README: base deps + FFmpeg)
+# - font packages for Arabic/Asian and emoji support (README: optional fonts)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
     git \
+    ffmpeg \
+    mediainfo \
+    rsync \
+    fonts-noto-core \
+    fonts-noto-extra \
+    #fonts-kacst \
+    fonts-kacst-one \
+    fonts-noto-cjk \
+    fonts-indic \
+    fonts-noto-color-emoji \
+    fontconfig \
+    libass9 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Create the working directory
+# Optional: install Amiri Arabic font (as in README)
+RUN git clone https://github.com/aliftype/amiri.git /tmp/amiri \
+    && mkdir -p /usr/share/fonts/truetype/amiri \
+    && cp /tmp/amiri/fonts/*.ttf /usr/share/fonts/truetype/amiri/ \
+    && fc-cache -fv \
+    && rm -rf /tmp/amiri
+
 WORKDIR /app
 
-# Copy requirements.txt and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip uninstall urllib3 -y
-RUN pip install --no-cache-dir --force-reinstall "urllib3==1.26.20"
-RUN pip install --no-deps moviepy==1.0.3
-# Copy the rest of the application files
-COPY . .
+# Copy requirements explicitly and check for its presence early so the build
+# fails with a clear message if the file is missing from the build context.
+COPY requirements.txt /app/requirements.txt
+RUN if [ ! -f /app/requirements.txt ]; then \
+            echo "ERROR: requirements.txt not found in build context (/app/requirements.txt)"; \
+            echo "Make sure you run docker build from project root or set correct build context."; \
+            ls -la /app || true; \
+            exit 1; \
+        fi && \
+        pip install --no-cache-dir -r /app/requirements.txt
 
-# Command to run the bot
-CMD ["python", "magic.py"]
+# Copy the rest of the project after installing dependencies to leverage Docker
+# layer caching.  Use an explicit destination path.
+COPY . /app
+
+# Копируем и делаем исполняемым entrypoint скрипт
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
