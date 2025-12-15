@@ -1,0 +1,4 @@
+aiogram==3.13.1
+yt-dlp
+aiofiles
+ffmpeg-python
