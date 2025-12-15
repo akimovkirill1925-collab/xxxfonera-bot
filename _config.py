@@ -14,15 +14,14 @@ class Config(object):
     # IMPORTANT (REQUIRED) SETTINGS - start filling settings here
     #######################################################        
     # Your bot name - Required (str)
-    BOT_NAME = "tgytdlp_test_bot"
+    BOT_NAME = "Xxxfonera_Video_Bot"
     # A name for users - Required (str)
-    BOT_NAME_FOR_USERS = "tgytdlp_bot" #name in database
+    BOT_NAME_FOR_USERS = "tgyt dlp_bot" #name in database
     # List of administrator IDs
-    ADMIN = [00000000, 111111111111]
+    ADMIN = [6438366716]
     # Add allowed group IDs - Only these groups will be served by the bot
-    ALLOWED_GROUP = [-100111111111111, -1002222222222222]
-    # API ID Telegram
-    API_ID = 00000000000000
+    ALLOWED_GROUP = [-1003549935379, -1001905672090]
+    # API ID TelegramAPI IDPI_ID = 00000000000000
     # API HASH Telegram
     API_HASH = "abc0000000000000000000"
     # Bot token
